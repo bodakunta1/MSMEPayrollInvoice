@@ -2,6 +2,10 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db.models import Q
+from companies.models import Company
+from contracts.models import PurchaseOrder
+from musters.models import SkillGroup
+
 
 # Create your models here.
 
@@ -28,7 +32,7 @@ class Labour(models.Model):
         OTHER = "other", "Other"
 
     company = models.ForeignKey(
-        "companies.Company",
+        Company,
         on_delete=models.CASCADE,
         related_name="labourers",
     )
@@ -88,7 +92,7 @@ class Labour(models.Model):
     )
 
     default_skill_group = models.ForeignKey(
-        "masters.SkillGroup",
+        SkillGroup,
         on_delete=models.PROTECT,
         related_name="default_labourers",
     )
@@ -148,13 +152,13 @@ class LabourPOAssignment(models.Model):
     """
 
     company = models.ForeignKey(
-        "companies.Company",
+        Company,
         on_delete=models.CASCADE,
         related_name="labour_assignments",
     )
 
     po = models.ForeignKey(
-        "contracts.PurchaseOrder",
+        PurchaseOrder,
         on_delete=models.CASCADE,
         related_name="labour_assignments",
     )
@@ -166,7 +170,7 @@ class LabourPOAssignment(models.Model):
     )
 
     skill_group = models.ForeignKey(
-        "masters.SkillGroup",
+        SkillGroup,
         on_delete=models.PROTECT,
         related_name="po_assignments",
     )

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator
+from companies.models import Company
 
 # Create your models here.
 
@@ -16,7 +17,7 @@ class Client(models.Model):
     """
 
     company = models.ForeignKey(
-        "companies.Company",
+        Company,
         on_delete=models.CASCADE,
         related_name="clients",
     )

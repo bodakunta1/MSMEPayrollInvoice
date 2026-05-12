@@ -2,6 +2,9 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from django.apps import apps
+from companies.models import Company
+from clients.models import Client
+from musters.models import SkillGroup
 
 # Create your models here.
 
@@ -12,13 +15,13 @@ class PurchaseOrder(models.Model):
         EXPIRED = "expired", "Expired"
 
     company = models.ForeignKey(
-        "companies.Company",
+        Company,
         on_delete=models.CASCADE,
         related_name="purchase_orders",
     )
 
     client = models.ForeignKey(
-        "clients.Client",
+        Client,
         on_delete=models.PROTECT,
         related_name="purchase_orders",
     )
@@ -140,7 +143,7 @@ class POLabourLimit(models.Model):
     )
 
     skill_group = models.ForeignKey(
-        "masters.SkillGroup",
+        SkillGroup,
         on_delete=models.PROTECT,
         related_name="po_limits",
     )
