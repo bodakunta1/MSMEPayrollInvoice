@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "musters",
     "contracts",
     "labour",
+    "payroll",
 ]
 
 MIDDLEWARE = [
