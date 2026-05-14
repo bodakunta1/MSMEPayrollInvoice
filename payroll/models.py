@@ -94,7 +94,7 @@ class PayComponent(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.name} ({self.get_category_display()})"
+        return f"{self.name}" # ({self.get_category_display()})"
 
 
 class WageRule(models.Model):
@@ -198,15 +198,15 @@ class WageRule(models.Model):
     def clean(self):
         errors = {}
 
-        if self.component_id:
+        if self.component:
             if self.component.category != PayComponent.Category.EARNING:
                 errors["component"] = "Wage rule component must be an earning component."
 
-            if self.company_id and self.component.company_id != self.company_id:
+            if self.company and self.component.company != self.company:
                 errors["component"] = "Component does not belong to selected company."
 
-        if self.po_id and self.company_id:
-            if self.po.company_id != self.company_id:
+        if self.po and self.company:
+            if self.po.company != self.company:
                 errors["po"] = "PO does not belong to selected company."
 
         if self.effective_from and self.effective_to:
@@ -228,7 +228,7 @@ class WageRule(models.Model):
             if not self.percentage_base:
                 errors["percentage_base"] = "Percentage base is required."
 
-            if self.percentage_base == PercentageBase.COMPONENT and not self.base_component_id:
+            if self.percentage_base == PercentageBase.COMPONENT and not self.base_component:
                 errors["base_component"] = "Base component is required for Specific Component percentage base."
 
         if errors:
@@ -346,15 +346,15 @@ class DeductionRule(models.Model):
     def clean(self):
         errors = {}
 
-        if self.component_id:
+        if self.component:
             if self.component.category != PayComponent.Category.DEDUCTION:
                 errors["component"] = "Deduction rule component must be a deduction component."
 
-            if self.company_id and self.component.company_id != self.company_id:
+            if self.company and self.component.company != self.company:
                 errors["component"] = "Component does not belong to selected company."
 
-        if self.po_id and self.company_id:
-            if self.po.company_id != self.company_id:
+        if self.po and self.company:
+            if self.po.company != self.company:
                 errors["po"] = "PO does not belong to selected company."
 
         if self.effective_from and self.effective_to:
@@ -376,7 +376,7 @@ class DeductionRule(models.Model):
             if not self.percentage_base:
                 errors["percentage_base"] = "Percentage base is required."
 
-            if self.percentage_base == PercentageBase.COMPONENT and not self.base_component_id:
+            if self.percentage_base == PercentageBase.COMPONENT and not self.base_component:
                 errors["base_component"] = "Base component is required for Specific Component percentage base."
 
         if errors:
@@ -449,8 +449,8 @@ class OvertimeRule(models.Model):
     def clean(self):
         errors = {}
 
-        if self.po_id and self.company_id:
-            if self.po.company_id != self.company_id:
+        if self.po and self.company:
+            if self.po.company != self.company:
                 errors["po"] = "PO does not belong to selected company."
 
         if self.effective_from and self.effective_to:
@@ -532,8 +532,8 @@ class JACRule(models.Model):
     def clean(self):
         errors = {}
 
-        if self.po_id and self.company_id:
-            if self.po.company_id != self.company_id:
+        if self.po and self.company:
+            if self.po.company != self.company:
                 errors["po"] = "PO does not belong to selected company."
 
         if self.effective_from and self.effective_to:
@@ -617,15 +617,15 @@ class PayrollCycle(models.Model):
     def clean(self):
         errors = {}
 
-        if self.company_id and self.po_id:
-            if self.po.company_id != self.company_id:
+        if self.company and self.po:
+            if self.po.company != self.company:
                 errors["po"] = "PO does not belong to selected company."
 
         if self.period_start and self.period_end:
             if self.period_end < self.period_start:
                 errors["period_end"] = "Period end date cannot be before period start date."
 
-        if self.po_id and self.period_start and self.period_end:
+        if self.po and self.period_start and self.period_end:
             if self.period_start < self.po.contract_start_date:
                 errors["period_start"] = "Payroll period cannot start before PO start date."
 
