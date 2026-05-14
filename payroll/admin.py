@@ -1,4 +1,5 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from attendance.services.services import create_muster_entries_for_cycle
 
 # Register your models here.
 
@@ -198,3 +199,29 @@ class PayrollCycleAdmin(admin.ModelAdmin):
     ]
 
     date_hierarchy = "period_start"
+
+    actions = [
+        "create_muster_entries",
+    ]
+
+    @admin.action(description="Create muster entries for selected payroll cycles")
+    def create_muster_entries(self, request, queryset):
+        
+        total_created = 0
+        total_existing = 0
+
+        for payroll_cycle in queryset:
+            created_count, existing_count = create_muster_entries_for_cycle(
+                payroll_cycle=payroll_cycle
+            )
+            total_created += created_count
+            total_existing += existing_count
+
+        self.message_user(
+            request,
+            (
+                f"Muster entries created: {total_created}. "
+                f"Already existing entries skipped: {total_existing}."
+            ),
+            level=messages.SUCCESS,
+        )
