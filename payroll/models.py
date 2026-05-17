@@ -1,5 +1,14 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from decimal import Decimal
+from django.contrib.auth import get_user_model
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.models import QuerySet
+    # PayrollLine is defined later in this module; the import is inside TYPE_CHECKING
+    # so it won't execute at runtime but helps static type checkers.
+    from .models import PayrollLine  # type: ignore
 
 # Create your models here.
 
@@ -638,3 +647,243 @@ class PayrollCycle(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+    
+
+class PayrollRun(models.Model):
+    """
+    One payroll calculation run for one company + PO + payroll cycle.
+    """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        CALCULATED = "calculated", "Calculated"
+        APPROVED = "approved", "Approved"
+        LOCKED = "locked", "Locked"
+        CANCELLED = "cancelled", "Cancelled"
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="payroll_runs",
+    )
+
+    po = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.CASCADE,
+        related_name="payroll_runs",
+    )
+
+    payroll_cycle = models.OneToOneField(
+        PayrollCycle,
+        on_delete=models.CASCADE,
+        related_name="payroll_run",
+    )
+
+    run_number = models.CharField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        help_text="Auto-generated payroll run number.",
+    )
+
+    status = models.CharField(
+        max_length=30,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
+
+    total_labourers = models.PositiveIntegerField(default=0)
+
+    total_basic_wage = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_jac_allowance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_other_cash = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_overtime = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_additional_allowance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    total_gross_wage = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    total_pf_deduction = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_esi_deduction = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_other_advance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_festival_advance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    total_deductions = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    total_net_pay = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    calculated_by = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="calculated_payroll_runs",
+    )
+
+    calculated_at = models.DateTimeField(null=True, blank=True)
+
+    remarks = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-payroll_cycle__period_start", "company__name", "po__po_number"]
+
+    def __str__(self):
+        return self.run_number or f"Payroll Run - {self.payroll_cycle.name}"
+
+    if TYPE_CHECKING:
+        # Reverse relation from PayrollLine defined below.
+        lines: "QuerySet[PayrollLine]"
+
+    def clean(self):
+        errors = {}
+
+        if self.company and self.po:
+            if self.po.company != self.company:
+                errors["po"] = "PO does not belong to selected company."
+
+        if self.company and self.payroll_cycle:
+            if self.payroll_cycle.company != self.company:
+                errors["payroll_cycle"] = "Payroll cycle does not belong to selected company."
+
+        if self.po and self.payroll_cycle:
+            if self.payroll_cycle.po != self.po:
+                errors["payroll_cycle"] = "Payroll cycle PO does not match selected PO."
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        if not self.run_number and self.payroll_cycle:
+            self.run_number = (
+                f"PR-{self.company}-{self.po}-"
+                f"{self.payroll_cycle.period_start:%Y%m%d}-"
+                f"{self.payroll_cycle.period_end:%Y%m%d}"
+            )
+
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
+
+class PayrollLine(models.Model):
+    """
+    Calculated payroll for one labourer in one payroll run.
+    """
+
+    payroll_run = models.ForeignKey(
+        PayrollRun,
+        on_delete=models.CASCADE,
+        related_name="lines",
+    )
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="payroll_lines",
+    )
+
+    payroll_cycle = models.ForeignKey(
+        PayrollCycle,
+        on_delete=models.CASCADE,
+        related_name="payroll_lines",
+    )
+
+    labour_assignment = models.ForeignKey(
+        "labour.LabourPOAssignment",
+        on_delete=models.PROTECT,
+        related_name="payroll_lines",
+    )
+
+    muster_entry = models.OneToOneField(
+        "attendance.MusterEntry",
+        on_delete=models.PROTECT,
+        related_name="payroll_line",
+    )
+
+    labour_code = models.CharField(max_length=50)
+    labourer_name = models.CharField(max_length=150)
+    skill_group_name = models.CharField(max_length=100)
+
+    working_days = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
+    basic_hours = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal("0.00"))
+    overtime_hours = models.DecimalField(max_digits=7, decimal_places=2, default=Decimal("0.00"))
+
+    basic_wage = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    jac_allowance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    other_cash = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    overtime_amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    additional_allowance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    gross_wage = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    pf_deduction = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    esi_deduction = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    other_advance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    festival_advance = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    total_deductions = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+    net_pay = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    calculation_notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["labourer_name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["payroll_run", "muster_entry"],
+                name="unique_payroll_line_per_run_muster_entry",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.labourer_name} - {self.payroll_run.run_number}"
+
+
+class PayrollLineComponent(models.Model):
+    """
+    Detailed component-wise breakup for each payroll line.
+    Useful for Form XIX payslip and future Excel export.
+    """
+
+    class Category(models.TextChoices):
+        EARNING = "earning", "Earning"
+        DEDUCTION = "deduction", "Deduction"
+
+    payroll_line = models.ForeignKey(
+        PayrollLine,
+        on_delete=models.CASCADE,
+        related_name="components",
+    )
+
+    component = models.ForeignKey(
+        PayComponent,
+        on_delete=models.PROTECT,
+        related_name="payroll_line_components",
+    )
+
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+    )
+
+    amount = models.DecimalField(max_digits=14, decimal_places=2, default=Decimal("0.00"))
+
+    display_order = models.PositiveSmallIntegerField(default=0)
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["payroll_line", "category", "display_order", "component__name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["payroll_line", "component"],
+                name="unique_component_per_payroll_line",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.payroll_line.labourer_name} - {self.component.name}: {self.amount}"
+    
+
