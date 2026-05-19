@@ -1,5 +1,4 @@
 from decimal import Decimal, ROUND_HALF_UP
-
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Sum
@@ -34,15 +33,57 @@ def money(value):
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
+# def get_component(company, code):
+#     try:
+#         return PayComponent.objects.get(
+#             company=company,
+#             code=code,
+#             is_active=True,
+#         )
+#     except PayComponent.DoesNotExist:
+#         raise ValidationError(f"Missing active pay component: {code}")
+
 def get_component(company, code):
-    try:
-        return PayComponent.objects.get(
-            company=company,
-            code=code,
-            is_active=True,
-        )
-    except PayComponent.DoesNotExist:
-        raise ValidationError(f"Missing active pay component: {code}")
+    """
+    Fetch pay component by internal code.
+
+    Example:
+    BASIC, JAC, OTHER_CASH, OVERTIME, ADDL_ALLOW,
+    PF_DED, ESI_DED, OTHER_ADV, FEST_ADV
+
+    Temporary fallback by name is included so old test data/code
+    does not break immediately.
+    """
+
+    component = PayComponent.objects.filter(
+        company=company,
+        code__iexact=code,
+        is_active=True,
+    ).first()
+
+    if component:
+        return component
+
+    component = PayComponent.objects.filter(
+        company=company,
+        name__iexact=code,
+        is_active=True,
+    ).first()
+
+    if component:
+        return component
+
+    available = PayComponent.objects.filter(
+        company=company,
+        is_active=True,
+    ).values_list("code", "name")
+
+    available_text = ", ".join([f"{c} ({n})" for c, n in available])
+
+    raise ValidationError(
+        f"Missing active pay component: {code}. "
+        f"Available active components: {available_text}"
+    )
 
 
 def _date_in_rule_period(queryset, payroll_cycle):
