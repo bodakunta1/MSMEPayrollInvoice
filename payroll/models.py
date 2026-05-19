@@ -680,7 +680,7 @@ class PayrollRun(models.Model):
     )
 
     run_number = models.CharField(
-        max_length=50,
+        max_length=100,
         unique=True,
         blank=True,
         help_text="Auto-generated payroll run number.",
@@ -756,7 +756,7 @@ class PayrollRun(models.Model):
     def save(self, *args, **kwargs):
         if not self.run_number and self.payroll_cycle:
             self.run_number = (
-                f"PR-{self.company}-{self.po}-"
+                f"PR-C{self.company}-PO{self.po}-"
                 f"{self.payroll_cycle.period_start:%Y%m%d}-"
                 f"{self.payroll_cycle.period_end:%Y%m%d}"
             )
