@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ payroll_run.run_number }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .top-actions {
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #374151;
+        }
+
+        .header-card {
+            background: white;
+            padding: 18px;
+            border: 1px solid #ddd;
+            margin-bottom: 18px;
+            border-radius: 8px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 8px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .meta-item {
+            background: #f9fafb;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5e5e5;
+            border-right: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #111827;
+            color: white;
+            font-size: 12px;
+            position: sticky;
+            top: 0;
+        }
+
+        .amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .notes {
+            color: #b45309;
+            font-size: 12px;
+            white-space: pre-line;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin: 22px 0 10px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                margin: 10mm;
+            }
+
+            .top-actions {
+                display: none;
+            }
+
+            th {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-actions">
+    <a class="btn btn-secondary" href="{% url 'payroll:payroll_run_list' %}">Back to Runs</a>
+    <button class="btn" onclick="window.print()">Print</button>
+</div>
+
+<div class="header-card">
+    <h1 class="title">Payroll Run Detail</h1>
+
+    <div class="meta-grid">
+        <div class="meta-item">
+            <div class="label">Run Number</div>
+            <div class="value">{{ payroll_run.run_number }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Company</div>
+            <div class="value">{{ payroll_run.company.name }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">PO Number</div>
+            <div class="value">{{ payroll_run.po.po_number }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Payroll Cycle</div>
+            <div class="value">{{ payroll_run.payroll_cycle.name }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Period Start</div>
+            <div class="value">{{ payroll_run.payroll_cycle.period_start }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Period End</div>
+            <div class="value">{{ payroll_run.payroll_cycle.period_end }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Status</div>
+            <div class="value">{{ payroll_run.status }}</div>
+        </div>
+
+        <div class="meta-item">
+            <div class="label">Calculated At</div>
+            <div class="value">{{ payroll_run.calculated_at }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="summary-label">Labourers</div>
+        <div class="summary-value">{{ payroll_run.total_labourers }}</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-label">Basic Wage</div>
+        <div class="summary-value">₹ {{ payroll_run.total_basic_wage|floatformat:2 }}</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-label">Gross Wage</div>
+        <div class="summary-value">₹ {{ payroll_run.total_gross_wage|floatformat:2 }}</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-label">PF Deduction</div>
+        <div class="summary-value">₹ {{ payroll_run.total_pf_deduction|floatformat:2 }}</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-label">ESI Deduction</div>
+        <div class="summary-value">₹ {{ payroll_run.total_esi_deduction|floatformat:2 }}</div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-label">Net Pay</div>
+        <div class="summary-value">₹ {{ payroll_run.total_net_pay|floatformat:2 }}</div>
+    </div>
+</div>
+
+<h2 class="section-title">Labour-wise Payroll Calculation</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>S.No</th>
+            <th>Labour Code</th>
+            <th>Labourer</th>
+            <th>Skill Group</th>
+            <th>Days</th>
+            <th>Basic Hrs</th>
+            <th>OT Hrs</th>
+            <th>Basic Wage</th>
+            <th>JAC</th>
+            <th>Other Cash</th>
+            <th>OT Amount</th>
+            <th>Addl Allow.</th>
+            <th>Gross</th>
+            <th>PF</th>
+            <th>ESI</th>
+            <th>Other Adv.</th>
+            <th>Fest Adv.</th>
+            <th>Deductions</th>
+            <th>Net Pay</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in payroll_lines %}
+        <tr>
+            <td class="center">{{ forloop.counter }}</td>
+            <td>{{ line.labour_code }}</td>
+            <td>{{ line.labourer_name }}</td>
+            <td>{{ line.skill_group_name }}</td>
+            <td class="center">{{ line.working_days|floatformat:2 }}</td>
+            <td class="center">{{ line.basic_hours|floatformat:2 }}</td>
+            <td class="center">{{ line.overtime_hours|floatformat:2 }}</td>
+
+            <td class="amount">₹ {{ line.basic_wage|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.jac_allowance|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.other_cash|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.overtime_amount|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.additional_allowance|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.gross_wage|floatformat:2 }}</td>
+
+            <td class="amount">₹ {{ line.pf_deduction|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.esi_deduction|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.other_advance|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.festival_advance|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.total_deductions|floatformat:2 }}</td>
+            <td class="amount">₹ {{ line.net_pay|floatformat:2 }}</td>
+
+            <td class="notes">{{ line.calculation_notes }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="20">No payroll lines found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

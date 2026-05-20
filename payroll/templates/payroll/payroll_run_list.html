@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payroll Runs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f5f7fb;
+            color: #222;
+        }
+
+        .page-header {
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-top: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e5e5;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #111827;
+            color: white;
+        }
+
+        tr:hover {
+            background: #f3f4f6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 7px 12px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .status {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .amount {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1 class="page-title">Payroll Runs</h1>
+    <div class="subtitle">Generated payroll calculations grouped by company, PO, and payroll cycle.</div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Run Number</th>
+            <th>Company</th>
+            <th>PO</th>
+            <th>Payroll Cycle</th>
+            <th>Status</th>
+            <th>Total Labourers</th>
+            <th>Total Gross</th>
+            <th>Total Deductions</th>
+            <th>Total Net Pay</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for run in payroll_runs %}
+        <tr>
+            <td>{{ run.run_number }}</td>
+            <td>{{ run.company.name }}</td>
+            <td>{{ run.po.po_number }}</td>
+            <td>{{ run.payroll_cycle.name }}</td>
+            <td class="status">{{ run.status }}</td>
+            <td>{{ run.total_labourers }}</td>
+            <td class="amount">₹ {{ run.total_gross_wage|floatformat:2 }}</td>
+            <td class="amount">₹ {{ run.total_deductions|floatformat:2 }}</td>
+            <td class="amount">₹ {{ run.total_net_pay|floatformat:2 }}</td>
+            <td>
+                <a class="btn" href="{% url 'payroll:payroll_run_detail' run.id %}">
+                    View
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10">No payroll runs found. Generate payroll from Payroll Cycles first.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>
