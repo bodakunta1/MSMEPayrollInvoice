@@ -7,6 +7,10 @@ from contracts.models import PurchaseOrder
 from musters.models import SkillGroup
 
 
+from companies.models import Company
+from contracts.models import PurchaseOrder
+from musters.models import SkillGroup
+
 # Create your models here.
 
 aadhaar_validator = RegexValidator(
