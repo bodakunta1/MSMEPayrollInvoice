@@ -43,17 +43,30 @@ def money(value):
 #     except PayComponent.DoesNotExist:
 #         raise ValidationError(f"Missing active pay component: {code}")
 
-def get_component(company, code):
+def get_component(company, code_or_component):
     """
-    Fetch pay component by internal code.
+    Accepts either:
+    - component code string: "BASIC", "PF_DED", etc.
+    - PayComponent object
 
-    Example:
-    BASIC, JAC, OTHER_CASH, OVERTIME, ADDL_ALLOW,
-    PF_DED, ESI_DED, OTHER_ADV, FEST_ADV
-
-    Temporary fallback by name is included so old test data/code
-    does not break immediately.
+    This prevents PostgreSQL error:
+    cannot adapt type 'PayComponent'
     """
+
+    if isinstance(code_or_component, PayComponent):
+        component = code_or_component
+
+        if component.company != company:
+            raise ValidationError(
+                f"Pay component {component} does not belong to company {company}."
+            )
+
+        if not component.is_active:
+            raise ValidationError(f"Pay component {component} is not active.")
+
+        return component
+
+    code = str(code_or_component).strip()
 
     component = PayComponent.objects.filter(
         company=company,
@@ -84,7 +97,6 @@ def get_component(company, code):
         f"Missing active pay component: {code}. "
         f"Available active components: {available_text}"
     )
-
 
 def _date_in_rule_period(queryset, payroll_cycle):
     effective_date = payroll_cycle.period_start
@@ -252,8 +264,8 @@ def calculate_overtime_amount(rule, muster_entry):
     return ZERO
 
 
-def create_component_line(payroll_line, component_code, category, amount, notes=""):
-    component = get_component(payroll_line.company, component_code)
+def create_component_line(payroll_line, component_code_or_component, category, amount, notes=""):
+    component = get_component(payroll_line.company, component_code_or_component)
 
     return PayrollLineComponent.objects.create(
         payroll_line=payroll_line,
