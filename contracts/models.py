@@ -6,6 +6,10 @@ from companies.models import Company
 from clients.models import Client
 from musters.models import SkillGroup
 
+from companies.models import Company
+from clients.models import Client
+
+
 # Create your models here.
 
 class PurchaseOrder(models.Model):
