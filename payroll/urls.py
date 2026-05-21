@@ -19,4 +19,11 @@ urlpatterns = [
         views.payroll_line_form_xix_single,
         name="payroll_line_form_xix_single",
     ),
+
+    path(
+    "runs/<int:pk>/wage-register.xlsx",
+    views.payroll_run_wage_register_excel,
+    name="payroll_run_wage_register_excel",
+    ),
+
 ]

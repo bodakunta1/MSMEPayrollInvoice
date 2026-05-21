@@ -1,6 +1,9 @@
+from io import BytesIO
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
+from django.http import HttpResponse
+from .exports import build_payroll_wage_register_workbook
 
 from .models import PayrollLine, PayrollRun
 
@@ -133,3 +136,40 @@ def payroll_line_form_xix_single(request, pk):
             "payroll_line": payroll_line,
         },
     )
+
+
+@login_required
+def payroll_run_wage_register_excel(request, pk):
+    """
+    Downloads Excel wage register for one payroll run.
+    """
+
+    payroll_run = get_object_or_404(
+        PayrollRun.objects.select_related(
+            "company",
+            "po",
+            "payroll_cycle",
+        ).prefetch_related(
+            "lines",
+        ),
+        pk=pk,
+    )
+
+    workbook = build_payroll_wage_register_workbook(payroll_run)
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    filename = f"wage_register_{payroll_run.run_number}.xlsx"
+
+    response = HttpResponse(
+        output.getvalue(),
+        content_type=(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ),
+    )
+
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
