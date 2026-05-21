@@ -173,3 +173,67 @@ def payroll_run_wage_register_excel(request, pk):
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
     return response
+
+
+@login_required
+def payroll_line_form_xix_pdf(request, pk):
+    """
+    Downloads single Form XIX PDF for one labourer.
+    """
+
+    payroll_line = get_object_or_404(
+        PayrollLine.objects.select_related(
+            "payroll_run",
+            "payroll_run__company",
+            "payroll_run__po",
+            "payroll_run__payroll_cycle",
+        ),
+        pk=pk,
+    )
+
+    from .pdf_exports import build_single_form_xix_pdf
+
+    pdf_buffer = build_single_form_xix_pdf(payroll_line)
+
+    filename = f"form_xix_{payroll_line.labour_code}_{payroll_line.payroll_run.run_number}.pdf"
+
+    response = HttpResponse(
+        pdf_buffer.getvalue(),
+        content_type="application/pdf",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
+
+
+@login_required
+def payroll_run_form_xix_bulk_pdf(request, pk):
+    """
+    Downloads bulk Form XIX PDF for all labourers in one payroll run.
+    4 slips per A4 page.
+    """
+
+    payroll_run = get_object_or_404(
+        PayrollRun.objects.select_related(
+            "company",
+            "po",
+            "payroll_cycle",
+        ).prefetch_related(
+            "lines",
+        ),
+        pk=pk,
+    )
+
+    from .pdf_exports import build_bulk_form_xix_pdf
+
+    pdf_buffer = build_bulk_form_xix_pdf(payroll_run)
+
+    filename = f"bulk_form_xix_{payroll_run.run_number}.pdf"
+
+    response = HttpResponse(
+        pdf_buffer.getvalue(),
+        content_type="application/pdf",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response

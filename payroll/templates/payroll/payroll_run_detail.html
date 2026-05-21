@@ -163,6 +163,10 @@
         Bulk Form XIX
     </a>
 
+    <a class="btn" href="{% url 'payroll:payroll_run_form_xix_bulk_pdf' payroll_run.id %}">
+        Download Bulk Form XIX PDF
+    </a>
+
     <a class="btn" href="{% url 'payroll:payroll_run_wage_register_excel' payroll_run.id %}">
     Download Wage Register Excel
     </a>
@@ -304,6 +308,11 @@
                 <a class="btn" href="{% url 'payroll:payroll_line_form_xix_single' line.id %}">
                     View
                 </a>
+
+                <a class="btn" href="{% url 'payroll:payroll_line_form_xix_pdf' line.id %}">
+                    PDF
+                </a>
+                
             </td>
 
             <td class="notes">{{ line.calculation_notes }}</td>

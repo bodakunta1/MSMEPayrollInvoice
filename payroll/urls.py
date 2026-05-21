@@ -26,4 +26,15 @@ urlpatterns = [
     name="payroll_run_wage_register_excel",
     ),
 
+    path(
+        "runs/<int:pk>/form-xix.pdf",
+        views.payroll_run_form_xix_bulk_pdf,
+        name="payroll_run_form_xix_bulk_pdf",
+    ),
+    path(
+        "lines/<int:pk>/form-xix.pdf",
+        views.payroll_line_form_xix_pdf,
+        name="payroll_line_form_xix_pdf",
+    ),
+
 ]
