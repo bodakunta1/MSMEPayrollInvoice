@@ -1,0 +1,11 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\rolli\\Scripts\\activate.bat",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "python-envs.workspaceSearchPaths": [
+    "./rolli",
+    "./.venv",
+    "./venv"
+  ]
+}
