@@ -35,5 +35,10 @@ urlpatterns = [
         views.payroll_line_form_xix_pdf,
         name="payroll_line_form_xix_pdf",
     ),
+    path(
+        "runs/<int:pk>/individual-form-xix.zip",
+        views.payroll_run_individual_form_xix_zip,
+        name="payroll_run_individual_form_xix_zip",
+    ),
 
 ]

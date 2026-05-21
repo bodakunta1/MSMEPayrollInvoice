@@ -5,7 +5,9 @@ from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.urls import reverse
 from .exports import build_payroll_wage_register_workbook
-from .browser_pdf import render_url_to_pdf_bytes
+from .browser_pdf import render_url_to_pdf_bytes, render_many_urls_to_pdf_bytes
+from zipfile import ZipFile, ZIP_DEFLATED
+from django.utils.text import slugify
 
 
 from .models import PayrollLine, PayrollRun
@@ -247,5 +249,62 @@ def payroll_run_form_xix_bulk_pdf(request, pk):
         content_type="application/pdf",
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    return response
+
+
+@login_required
+def payroll_run_individual_form_xix_zip(request, pk):
+    """
+    Downloads one ZIP file containing individual Form XIX PDFs
+    for every labourer in a payroll run.
+
+    This is useful for WhatsApp sending later.
+    """
+
+    payroll_run = get_object_or_404(
+        PayrollRun.objects.select_related(
+            "company",
+            "po",
+            "payroll_cycle",
+        ).prefetch_related(
+            "lines",
+        ),
+        pk=pk,
+    )
+
+    lines = payroll_run.lines.all().order_by("labourer_name")
+
+    pdf_items = []
+
+    for line in lines:
+        safe_name = slugify(line.labourer_name) or f"labourer-{line.id}"
+        safe_code = slugify(line.labour_code) or f"code-{line.id}"
+
+        filename = f"{safe_code}_{safe_name}_form_xix.pdf"
+
+        html_url = request.build_absolute_uri(
+            reverse("payroll:payroll_line_form_xix_single", args=[line.id])
+        )
+
+        pdf_items.append((filename, html_url))
+
+    rendered_pdfs = render_many_urls_to_pdf_bytes(pdf_items, request)
+
+    zip_buffer = BytesIO()
+
+    with ZipFile(zip_buffer, "w", ZIP_DEFLATED) as zip_file:
+        for filename, pdf_bytes in rendered_pdfs:
+            zip_file.writestr(filename, pdf_bytes)
+
+    zip_buffer.seek(0)
+
+    zip_filename = f"individual_form_xix_{payroll_run.payroll_cycle.name}.zip"
+
+    response = HttpResponse(
+        zip_buffer.getvalue(),
+        content_type="application/zip",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
 
     return response
