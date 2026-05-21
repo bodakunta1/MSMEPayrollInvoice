@@ -98,9 +98,7 @@ def payroll_run_form_xix_bulk(request, pk):
         pk=pk,
     )
 
-    return render(
-        request,
-        "payroll/form_xix_bulk.html",
+    return render(request, "payroll/form_xix_bulk.html",
         {
             "payroll_run": payroll_run,
             "payroll_lines": payroll_run.lines.all(),
