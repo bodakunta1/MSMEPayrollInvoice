@@ -3,7 +3,10 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.http import HttpResponse
+from django.urls import reverse
 from .exports import build_payroll_wage_register_workbook
+from .browser_pdf import render_url_to_pdf_bytes
+
 
 from .models import PayrollLine, PayrollRun
 
@@ -178,7 +181,10 @@ def payroll_run_wage_register_excel(request, pk):
 @login_required
 def payroll_line_form_xix_pdf(request, pk):
     """
-    Downloads single Form XIX PDF for one labourer.
+    Downloads single Form XIX PDF.
+
+    This PDF is generated from the same HTML page:
+    /payroll/lines/<id>/form-xix/
     """
 
     payroll_line = get_object_or_404(
@@ -191,14 +197,16 @@ def payroll_line_form_xix_pdf(request, pk):
         pk=pk,
     )
 
-    from .pdf_exports import build_single_form_xix_pdf
+    html_url = request.build_absolute_uri(
+        reverse("payroll:payroll_line_form_xix_single", args=[payroll_line.id])
+    )
 
-    pdf_buffer = build_single_form_xix_pdf(payroll_line)
+    pdf_bytes = render_url_to_pdf_bytes(html_url, request)
 
-    filename = f"form_xix_{payroll_line.labour_code}_{payroll_line.payroll_run.run_number}.pdf"
+    filename = f"form_xix_{payroll_line.labour_code}_{payroll_line.labourer_name}.pdf"
 
     response = HttpResponse(
-        pdf_buffer.getvalue(),
+        pdf_bytes,
         content_type="application/pdf",
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
@@ -209,8 +217,12 @@ def payroll_line_form_xix_pdf(request, pk):
 @login_required
 def payroll_run_form_xix_bulk_pdf(request, pk):
     """
-    Downloads bulk Form XIX PDF for all labourers in one payroll run.
-    4 slips per A4 page.
+    Downloads bulk Form XIX PDF.
+
+    This PDF is generated from the same HTML page:
+    /payroll/runs/<id>/form-xix/
+
+    So the browser page and PDF remain visually same.
     """
 
     payroll_run = get_object_or_404(
@@ -218,20 +230,20 @@ def payroll_run_form_xix_bulk_pdf(request, pk):
             "company",
             "po",
             "payroll_cycle",
-        ).prefetch_related(
-            "lines",
         ),
         pk=pk,
     )
 
-    from .pdf_exports import build_bulk_form_xix_pdf
+    html_url = request.build_absolute_uri(
+        reverse("payroll:payroll_run_form_xix_bulk", args=[payroll_run.id])
+    )
 
-    pdf_buffer = build_bulk_form_xix_pdf(payroll_run)
+    pdf_bytes = render_url_to_pdf_bytes(html_url, request)
 
-    filename = f"bulk_form_xix_{payroll_run.run_number}.pdf"
+    filename = f"bulk_form_xix_{payroll_run.payroll_cycle.name}.pdf"
 
     response = HttpResponse(
-        pdf_buffer.getvalue(),
+        pdf_bytes,
         content_type="application/pdf",
     )
     response["Content-Disposition"] = f'attachment; filename="{filename}"'

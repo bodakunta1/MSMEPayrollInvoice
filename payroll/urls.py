@@ -7,7 +7,6 @@ urlpatterns = [
     path("runs/", views.payroll_run_list, name="payroll_run_list"),
     path("runs/<int:pk>/", views.payroll_run_detail, name="payroll_run_detail"),
 
-
     # Form XIX payslip pages
     path(
         "runs/<int:pk>/form-xix/",
@@ -21,9 +20,9 @@ urlpatterns = [
     ),
 
     path(
-    "runs/<int:pk>/wage-register.xlsx",
-    views.payroll_run_wage_register_excel,
-    name="payroll_run_wage_register_excel",
+        "runs/<int:pk>/wage-register.xlsx",
+        views.payroll_run_wage_register_excel,
+        name="payroll_run_wage_register_excel",
     ),
 
     path(
