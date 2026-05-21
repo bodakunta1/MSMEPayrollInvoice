@@ -158,7 +158,12 @@
 
 <div class="top-actions">
     <a class="btn btn-secondary" href="{% url 'payroll:payroll_run_list' %}">Back to Runs</a>
-    <button class="btn" onclick="window.print()">Print</button>
+
+    <a class="btn" href="{% url 'payroll:payroll_run_form_xix_bulk' payroll_run.id %}">
+        Bulk Form XIX
+    </a>
+
+    <button class="btn" onclick="window.print()">Print Summary</button>
 </div>
 
 <div class="header-card">
@@ -263,6 +268,7 @@
             <th>Fest Adv.</th>
             <th>Deductions</th>
             <th>Net Pay</th>
+            <th>Payslip</th>
             <th>Notes</th>
         </tr>
     </thead>
@@ -290,12 +296,17 @@
             <td class="amount">₹ {{ line.festival_advance|floatformat:2 }}</td>
             <td class="amount">₹ {{ line.total_deductions|floatformat:2 }}</td>
             <td class="amount">₹ {{ line.net_pay|floatformat:2 }}</td>
+            <td class="center">
+                <a class="btn" href="{% url 'payroll:payroll_line_form_xix_single' line.id %}">
+                    View
+                </a>
+            </td>
 
             <td class="notes">{{ line.calculation_notes }}</td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="20">No payroll lines found.</td>
+            <td colspan="21">No payroll lines found.</td>
         </tr>
         {% endfor %}
     </tbody>

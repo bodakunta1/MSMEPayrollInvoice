@@ -70,3 +70,68 @@ def payroll_run_detail(request, pk):
             "payroll_lines": payroll_run.lines.all(),
         },
     )
+
+
+@login_required
+def payroll_run_form_xix_bulk(request, pk):
+    """
+    Bulk Form XIX print page.
+
+    Shows all labourers' payslips for one payroll run.
+    Layout is designed for 4 slips per A4 page.
+    """
+
+    payroll_lines_qs = PayrollLine.objects.select_related(
+        "labour_assignment",
+        "labour_assignment__labourer",
+        "muster_entry",
+    ).order_by("labourer_name")
+
+    payroll_run = get_object_or_404(
+        PayrollRun.objects.select_related(
+            "company",
+            "po",
+            "payroll_cycle",
+        ).prefetch_related(
+            Prefetch("lines", queryset=payroll_lines_qs)
+        ),
+        pk=pk,
+    )
+
+    return render(
+        request,
+        "payroll/form_xix_bulk.html",
+        {
+            "payroll_run": payroll_run,
+            "payroll_lines": payroll_run.lines.all(),
+        },
+    )
+
+
+@login_required
+def payroll_line_form_xix_single(request, pk):
+    """
+    Single Form XIX print page for one labourer.
+    """
+
+    payroll_line = get_object_or_404(
+        PayrollLine.objects.select_related(
+            "payroll_run",
+            "payroll_run__company",
+            "payroll_run__po",
+            "payroll_run__payroll_cycle",
+            "labour_assignment",
+            "labour_assignment__labourer",
+            "muster_entry",
+        ),
+        pk=pk,
+    )
+
+    return render(
+        request,
+        "payroll/form_xix_single.html",
+        {
+            "payroll_run": payroll_line.payroll_run,
+            "payroll_line": payroll_line,
+        },
+    )

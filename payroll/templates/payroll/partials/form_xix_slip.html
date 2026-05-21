@@ -1,0 +1,148 @@
+<div class="slip">
+    <div class="slip-header">
+        <div class="company-block">
+            {% if payroll_run.company.logo %}
+                <img class="company-logo" src="{{ payroll_run.company.logo.url }}" alt="Company Logo">
+            {% endif %}
+            <div>
+                <div class="company-name">{{ payroll_run.company.name }}</div>
+                <div class="company-address">{{ payroll_run.company.address }}</div>
+                {% if payroll_run.company.gst_number %}
+                    <div class="small-text">GST: {{ payroll_run.company.gst_number }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-title">
+            <div class="title-main">FORM XIX</div>
+            <div class="title-sub">Pay Slip</div>
+        </div>
+    </div>
+
+    <div class="meta-grid">
+        <div>
+            <span class="label">Month:</span>
+            {{ payroll_run.payroll_cycle.name }}
+        </div>
+        <div>
+            <span class="label">Period:</span>
+            {{ payroll_run.payroll_cycle.period_start }} to {{ payroll_run.payroll_cycle.period_end }}
+        </div>
+        <div>
+            <span class="label">PO:</span>
+            {{ payroll_run.po.po_number }}
+        </div>
+        <div>
+            <span class="label">Location:</span>
+            {{ payroll_run.po.location|default:"-" }}
+        </div>
+    </div>
+
+    <div class="employee-grid">
+        <div>
+            <span class="label">Employee Name:</span>
+            {{ payroll_line.labourer_name }}
+        </div>
+        <div>
+            <span class="label">Labour Code:</span>
+            {{ payroll_line.labour_code }}
+        </div>
+        <div>
+            <span class="label">Designation:</span>
+            {{ payroll_line.skill_group_name }}
+        </div>
+        <div>
+            <span class="label">Working Days:</span>
+            {{ payroll_line.working_days|floatformat:2 }}
+        </div>
+        <div>
+            <span class="label">Basic Hours:</span>
+            {{ payroll_line.basic_hours|floatformat:2 }}
+        </div>
+        <div>
+            <span class="label">OT Hours:</span>
+            {{ payroll_line.overtime_hours|floatformat:2 }}
+        </div>
+    </div>
+
+    <div class="tables-row">
+        <table class="slip-table">
+            <thead>
+                <tr>
+                    <th colspan="2">Earnings</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Basic Wage</td>
+                    <td class="amount">₹ {{ payroll_line.basic_wage|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>JAC Allowance</td>
+                    <td class="amount">₹ {{ payroll_line.jac_allowance|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Other Cash</td>
+                    <td class="amount">₹ {{ payroll_line.other_cash|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Overtime</td>
+                    <td class="amount">₹ {{ payroll_line.overtime_amount|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Additional Allowance</td>
+                    <td class="amount">₹ {{ payroll_line.additional_allowance|floatformat:2 }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Gross Wage</td>
+                    <td class="amount">₹ {{ payroll_line.gross_wage|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="slip-table">
+            <thead>
+                <tr>
+                    <th colspan="2">Deductions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PF Deduction</td>
+                    <td class="amount">₹ {{ payroll_line.pf_deduction|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>ESI Deduction</td>
+                    <td class="amount">₹ {{ payroll_line.esi_deduction|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Other Advance</td>
+                    <td class="amount">₹ {{ payroll_line.other_advance|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td>Festival Advance</td>
+                    <td class="amount">₹ {{ payroll_line.festival_advance|floatformat:2 }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total Deductions</td>
+                    <td class="amount">₹ {{ payroll_line.total_deductions|floatformat:2 }}</td>
+                </tr>
+                <tr class="net-row">
+                    <td>Net Salary</td>
+                    <td class="amount">₹ {{ payroll_line.net_pay|floatformat:2 }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-grid">
+        <div>
+            <span class="label">Prepared By:</span>
+            __________________
+        </div>
+        <div>
+            <span class="label">Employee Signature:</span>
+            __________________
+        </div>
+    </div>
+</div>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form XIX - {{ payroll_line.labourer_name }}</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+            margin: 0;
+        }
+
+        .screen-actions {
+            padding: 14px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #374151;
+        }
+
+        .single-page {
+            width: 180mm;
+            margin: 16px auto;
+            background: white;
+            padding: 10mm;
+            box-sizing: border-box;
+        }
+
+        .slip {
+            border: 1.5px solid #111827;
+            padding: 14px;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        .slip-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #111827;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .company-block {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            width: 70%;
+        }
+
+        .company-logo {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .company-address {
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .small-text {
+            font-size: 11px;
+        }
+
+        .form-title {
+            text-align: right;
+        }
+
+        .title-main {
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .title-sub {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .meta-grid,
+        .employee-grid,
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 14px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .employee-grid {
+            border: 1px solid #d1d5db;
+            padding: 10px;
+        }
+
+        .label {
+            font-weight: 700;
+        }
+
+        .tables-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .slip-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .slip-table th {
+            background: #111827;
+            color: white;
+            border: 1px solid #111827;
+            padding: 7px;
+            text-align: center;
+        }
+
+        .slip-table td {
+            border: 1px solid #9ca3af;
+            padding: 7px;
+        }
+
+        .amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .total-row td {
+            font-weight: 700;
+            background: #f3f4f6;
+        }
+
+        .net-row td {
+            font-weight: 800;
+            background: #e5e7eb;
+        }
+
+        .footer-grid {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px dashed #9ca3af;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .screen-actions {
+                display: none;
+            }
+
+            .single-page {
+                margin: 0;
+                width: auto;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="screen-actions">
+    <a class="btn btn-secondary" href="{% url 'payroll:payroll_run_detail' payroll_run.id %}">
+        Back to Payroll Run
+    </a>
+    <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<div class="single-page">
+    {% include "payroll/partials/form_xix_slip.html" with payroll_line=payroll_line payroll_run=payroll_run %}
+</div>
+
+</body>
+</html>
