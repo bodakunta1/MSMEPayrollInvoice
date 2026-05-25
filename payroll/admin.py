@@ -15,6 +15,7 @@ from .models import (
     PayrollLine,
     PayrollLineComponent,
     PayrollRun,
+    WhatsAppPayslipLog,
 )
 
 
@@ -392,3 +393,49 @@ class PayrollLineComponentAdmin(admin.ModelAdmin):
         "category",
         "component",
     ]
+
+
+@admin.register(WhatsAppPayslipLog)
+class WhatsAppPayslipLogAdmin(admin.ModelAdmin):
+    list_display = [
+        "labourer_name",
+        "labour_code",
+        "phone_number",
+        "payroll_run",
+        "status",
+        "whatsapp_message_id",
+        "sent_at",
+    ]
+
+    search_fields = [
+        "labourer_name",
+        "labour_code",
+        "phone_number",
+        "whatsapp_message_id",
+        "error_message",
+    ]
+
+    list_filter = [
+        "company",
+        "payroll_run",
+        "status",
+    ]
+
+    readonly_fields = [
+        "payroll_line",
+        "payroll_run",
+        "company",
+        "labour_code",
+        "labourer_name",
+        "phone_number",
+        "pdf_filename",
+        "status",
+        "whatsapp_media_id",
+        "whatsapp_message_id",
+        "error_message",
+        "sent_at",
+        "created_at",
+        "updated_at",
+    ]
+
+

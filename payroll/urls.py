@@ -40,5 +40,10 @@ urlpatterns = [
         views.payroll_run_individual_form_xix_zip,
         name="payroll_run_individual_form_xix_zip",
     ),
+    path(
+        "lines/<int:pk>/send-whatsapp/",
+        views.payroll_line_send_whatsapp,
+        name="payroll_line_send_whatsapp",
+    ),  
 
 ]

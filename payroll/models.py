@@ -887,3 +887,59 @@ class PayrollLineComponent(models.Model):
         return f"{self.payroll_line.labourer_name} - {self.component.name}: {self.amount}"
     
 
+class WhatsAppPayslipLog(models.Model):
+    """
+    Tracks WhatsApp sending status for one payroll line / payslip.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        SENT = "sent", "Sent"
+        FAILED = "failed", "Failed"
+        SKIPPED = "skipped", "Skipped"
+
+    payroll_line = models.OneToOneField(
+        PayrollLine,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_log",
+    )
+
+    payroll_run = models.ForeignKey(
+        PayrollRun,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_logs",
+    )
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="whatsapp_payslip_logs",
+    )
+
+    labour_code = models.CharField(max_length=50)
+    labourer_name = models.CharField(max_length=150)
+    phone_number = models.CharField(max_length=20, blank=True)
+
+    pdf_filename = models.CharField(max_length=255, blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    whatsapp_media_id = models.CharField(max_length=100, blank=True)
+    whatsapp_message_id = models.CharField(max_length=100, blank=True)
+
+    error_message = models.TextField(blank=True)
+
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at", "labourer_name"]
+
+    def __str__(self):
+        return f"{self.labourer_name} - {self.status}"

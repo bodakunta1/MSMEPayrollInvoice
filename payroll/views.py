@@ -8,6 +8,8 @@ from .exports import build_payroll_wage_register_workbook
 from .browser_pdf import render_url_to_pdf_bytes, render_many_urls_to_pdf_bytes
 from zipfile import ZipFile, ZIP_DEFLATED
 from django.utils.text import slugify
+from django.contrib import messages
+from django.shortcuts import redirect
 
 
 from .models import PayrollLine, PayrollRun
@@ -308,3 +310,48 @@ def payroll_run_individual_form_xix_zip(request, pk):
     response["Content-Disposition"] = f'attachment; filename="{zip_filename}"'
 
     return response
+
+
+@login_required
+def payroll_line_send_whatsapp(request, pk):
+    """
+    Sends one labourer's Form XIX payslip by WhatsApp.
+    """
+
+    if request.method != "POST":
+        return redirect("payroll:payroll_line_form_xix_single", pk=pk)
+
+    payroll_line = get_object_or_404(
+        PayrollLine.objects.select_related(
+            "payroll_run",
+            "payroll_run__company",
+            "payroll_run__po",
+            "payroll_run__payroll_cycle",
+            "company",
+            "payroll_cycle",
+            "labour_assignment",
+            "labour_assignment__labourer",
+        ),
+        pk=pk,
+    )
+
+    try:
+        from .whatsapp_services import send_single_payslip_whatsapp
+
+        log = send_single_payslip_whatsapp(
+            payroll_line=payroll_line,
+            request=request,
+        )
+
+        messages.success(
+            request,
+            f"WhatsApp payslip sent to {log.labourer_name} ({log.phone_number}).",
+        )
+
+    except Exception as error:
+        messages.error(
+            request,
+            f"WhatsApp sending failed for {payroll_line.labourer_name}: {error}",
+        )
+
+    return redirect("payroll:payroll_run_detail", pk=payroll_line.payroll_run_id)

@@ -178,6 +178,17 @@
     <button class="btn" onclick="window.print()">Print Summary</button>
 </div>
 
+{% if messages %}
+    <div style="margin: 12px 0;">
+        {% for message in messages %}
+            <div style="padding: 10px 12px; border: 1px solid #ddd; background: white; margin-bottom: 8px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
 <div class="header-card">
     <h1 class="title">Payroll Run Detail</h1>
 
@@ -316,6 +327,13 @@
                 <a class="btn" href="{% url 'payroll:payroll_line_form_xix_pdf' line.id %}">
                     PDF
                 </a>
+
+                <form method="post" action="{% url 'payroll:payroll_line_send_whatsapp' line.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn" type="submit">
+                        WhatsApp
+                    </button>
+                </form>
                 
             </td>
 
