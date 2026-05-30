@@ -895,6 +895,8 @@ class WhatsAppPayslipLog(models.Model):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"
         SENT = "sent", "Sent"
+        DELIVERED = "delivered", "Delivered"
+        READ = "read", "Read"
         FAILED = "failed", "Failed"
         SKIPPED = "skipped", "Skipped"
 
@@ -928,6 +930,19 @@ class WhatsAppPayslipLog(models.Model):
         default=Status.PENDING,
     )
 
+    recipient_id = models.CharField(max_length=30, blank=True)
+    webhook_status_raw = models.CharField(max_length=50, blank=True)
+    conversation_id = models.CharField(max_length=100, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    failed_at = models.DateTimeField(null=True, blank=True)
+    failure_code = models.CharField(max_length=50, blank=True)
+    failure_title = models.CharField(max_length=255, blank=True)
+    failure_details = models.TextField(blank=True)
+
+    last_webhook_payload = models.JSONField(default=dict, blank=True)
+
     whatsapp_media_id = models.CharField(max_length=100, blank=True)
     whatsapp_message_id = models.CharField(max_length=100, blank=True)
 
@@ -943,3 +958,5 @@ class WhatsAppPayslipLog(models.Model):
 
     def __str__(self):
         return f"{self.labourer_name} - {self.status}"
+    
+

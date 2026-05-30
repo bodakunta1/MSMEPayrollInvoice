@@ -397,14 +397,18 @@ class PayrollLineComponentAdmin(admin.ModelAdmin):
 
 @admin.register(WhatsAppPayslipLog)
 class WhatsAppPayslipLogAdmin(admin.ModelAdmin):
+    
     list_display = [
         "labourer_name",
         "labour_code",
         "phone_number",
         "payroll_run",
         "status",
+        "webhook_status_raw",
         "whatsapp_message_id",
-        "sent_at",
+        "delivered_at",
+        "read_at",
+        "failed_at",
     ]
 
     search_fields = [
@@ -412,6 +416,10 @@ class WhatsAppPayslipLogAdmin(admin.ModelAdmin):
         "labour_code",
         "phone_number",
         "whatsapp_message_id",
+        "recipient_id",
+        "failure_code",
+        "failure_title",
+        "failure_details",
         "error_message",
     ]
 
@@ -430,12 +438,24 @@ class WhatsAppPayslipLogAdmin(admin.ModelAdmin):
         "phone_number",
         "pdf_filename",
         "status",
+        "recipient_id",
+        "webhook_status_raw",
+        "conversation_id",
         "whatsapp_media_id",
         "whatsapp_message_id",
         "error_message",
+        "failure_code",
+        "failure_title",
+        "failure_details",
+        "last_webhook_payload",
         "sent_at",
+        "delivered_at",
+        "read_at",
+        "failed_at",
         "created_at",
         "updated_at",
     ]
+
+
 
 

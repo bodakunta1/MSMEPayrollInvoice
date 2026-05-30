@@ -11,6 +11,8 @@ from django.utils.text import slugify
 from django.contrib import messages
 from django.shortcuts import redirect
 
+import hashlib
+import hmac
 import json
 import logging
 
@@ -22,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 from .models import PayrollLine, PayrollRun
+from .webhook_services import process_whatsapp_webhook_payload
 
 
 # Create your views here.
@@ -367,25 +370,103 @@ def payroll_line_send_whatsapp(request, pk):
 
 #Webhook to receive incoming messages from Meta servers (WhatsApp)
 
+# @csrf_exempt
+# def whatsapp_webhook(request):
+#     if request.method == "GET":
+#         mode = request.GET.get("hub.mode")
+#         verify_token = request.GET.get("hub.verify_token")
+#         challenge = request.GET.get("hub.challenge")
+
+#         if mode == "subscribe" and verify_token == settings.WHATSAPP_VERIFY_TOKEN:
+#             return HttpResponse(challenge, status=200)
+
+#         return HttpResponse("Invalid verify token", status=403)
+
+#     if request.method == "POST":
+#         try:
+#             payload = json.loads(request.body.decode("utf-8"))
+#             logger.info("WhatsApp webhook payload: %s", payload)
+#         except json.JSONDecodeError:
+#             return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+#         return JsonResponse({"status": "received"}, status=200)
+
+#     return HttpResponse("Method not allowed", status=405)
+
+
+def verify_meta_signature(request):
+    """
+    Optional security check.
+
+    Meta sends X-Hub-Signature-256 when app secret is configured.
+    For local development, if META_APP_SECRET is empty, we skip this check.
+    """
+
+    app_secret = getattr(settings, "META_APP_SECRET", "")
+
+    if not app_secret:
+        return True
+
+    received_signature = request.headers.get("X-Hub-Signature-256", "")
+
+    if not received_signature.startswith("sha256="):
+        return False
+
+    expected_signature = hmac.new(
+        key=app_secret.encode("utf-8"),
+        msg=request.body,
+        digestmod=hashlib.sha256,
+    ).hexdigest()
+
+    expected_signature = f"sha256={expected_signature}"
+
+    return hmac.compare_digest(received_signature, expected_signature)
+
+
 @csrf_exempt
 def whatsapp_webhook(request):
+    """
+    WhatsApp Cloud API webhook endpoint.
+
+    GET  = Meta verification request.
+    POST = delivery/read/failed status updates.
+    """
+
     if request.method == "GET":
         mode = request.GET.get("hub.mode")
         verify_token = request.GET.get("hub.verify_token")
         challenge = request.GET.get("hub.challenge")
 
-        if mode == "subscribe" and verify_token == settings.WHATSAPP_VERIFY_TOKEN:
+        expected_token = settings.WHATSAPP_WEBHOOK_VERIFY_TOKEN
+
+        if mode == "subscribe" and verify_token == expected_token and challenge:
             return HttpResponse(challenge, status=200)
 
-        return HttpResponse("Invalid verify token", status=403)
+        return HttpResponse("Webhook verification failed", status=403)
 
     if request.method == "POST":
+        if not verify_meta_signature(request):
+            return JsonResponse(
+                {"ok": False, "error": "Invalid Meta signature"},
+                status=403,
+            )
+
         try:
             payload = json.loads(request.body.decode("utf-8"))
-            logger.info("WhatsApp webhook payload: %s", payload)
         except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return JsonResponse(
+                {"ok": False, "error": "Invalid JSON"},
+                status=400,
+            )
 
-        return JsonResponse({"status": "received"}, status=200)
+        processed_count = process_whatsapp_webhook_payload(payload)
+
+        return JsonResponse(
+            {
+                "ok": True,
+                "processed_status_updates": processed_count,
+            },
+            status=200,
+        )
 
     return HttpResponse("Method not allowed", status=405)
