@@ -26,7 +26,10 @@ SECRET_KEY = "django-insecure-fs-m91a^#(%wq4hu^%t8wqrc&^nzzqf+(w#bpn1ulmrdc0(!7_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "kymographic-tamika-baldpated.ngrok-free.dev",
+    "127.0.0.1"
+]
 
 # Application definition
 
@@ -143,8 +146,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 #WhatsApp API settings
 
-WHATSAPP_CLOUD_API_ENABLED = os.getenv("WHATSAPP_CLOUD_API_ENABLED", "False") == "True"
+WHATSAPP_CLOUD_API_ENABLED = "True"
 
-WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
-WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "EAA90ZCsoZApTUBRmNnKZC5fDGY55kHfwrd4cmMwOiUd3DEtgkbUUukBNdOAdmsjDJeLsjRnjpVeSwdiBhYNjqfWxVhwIr47KP8sCMSVqioCaD8tzzMqGEFr9GWojllQxgYw20ZBHeZAr8XrNkrwLsBFm8BcNOfvotZAZBZBtxvFibOYgoXblWWI5L2bQd2HnFZBZAW4hHXU8qWDLVIzNY76iPZCF9TAk5pjHCzdkCNjDGCuGXJGLv5p9I7GYXoSp6nbL7ZC3LPzKsVL25wFvm2tOgAVBJcCnzQZDZD")
+WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "1068292019708764")
 WHATSAPP_GRAPH_API_VERSION = os.getenv("WHATSAPP_GRAPH_API_VERSION", "v23.0")
+WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "bobby_payroll_verify_2026")

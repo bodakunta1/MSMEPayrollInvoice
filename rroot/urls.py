@@ -19,10 +19,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from payroll.views import whatsapp_webhook
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("payroll/", include("payroll.urls", namespace="payroll")),
+    path("webhooks/whatsapp/", whatsapp_webhook, name="whatsapp_webhook"),
 
 ]
 

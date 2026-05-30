@@ -11,6 +11,15 @@ from django.utils.text import slugify
 from django.contrib import messages
 from django.shortcuts import redirect
 
+import json
+import logging
+
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+logger = logging.getLogger(__name__)
+
 
 from .models import PayrollLine, PayrollRun
 
@@ -355,3 +364,28 @@ def payroll_line_send_whatsapp(request, pk):
         )
 
     return redirect("payroll:payroll_run_detail", pk=payroll_line.payroll_run_id)
+
+#Webhook to receive incoming messages from Meta servers (WhatsApp)
+
+@csrf_exempt
+def whatsapp_webhook(request):
+    if request.method == "GET":
+        mode = request.GET.get("hub.mode")
+        verify_token = request.GET.get("hub.verify_token")
+        challenge = request.GET.get("hub.challenge")
+
+        if mode == "subscribe" and verify_token == settings.WHATSAPP_VERIFY_TOKEN:
+            return HttpResponse(challenge, status=200)
+
+        return HttpResponse("Invalid verify token", status=403)
+
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body.decode("utf-8"))
+            logger.info("WhatsApp webhook payload: %s", payload)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        return JsonResponse({"status": "received"}, status=200)
+
+    return HttpResponse("Method not allowed", status=405)
