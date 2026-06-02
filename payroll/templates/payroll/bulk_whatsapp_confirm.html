@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bulk WhatsApp Payslips</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f5f7fb;
+            color: #111827;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #374151;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th {
+            background: #111827;
+            color: white;
+        }
+
+        .warning {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Bulk WhatsApp Payslips</h1>
+
+    <p><strong>Company:</strong> {{ payroll_run.company.name }}</p>
+    <p><strong>PO:</strong> {{ payroll_run.po.po_number }}</p>
+    <p><strong>Payroll Cycle:</strong> {{ payroll_run.payroll_cycle.name }}</p>
+    <p><strong>Total Labourers:</strong> {{ payroll_run.total_labourers }}</p>
+
+    <div class="warning">
+        WhatsApp will send payslips only to numbers that are allowed by Meta.
+        If a labourer has not messaged your WhatsApp business number recently, sending may fail unless you use an approved template.
+    </div>
+
+    <a class="btn btn-secondary" href="{% url 'payroll:payroll_run_detail' payroll_run.id %}">
+        Back
+    </a>
+
+    <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">
+            Confirm Bulk Send
+        </button>
+    </form>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>S.No</th>
+            <th>Labour Code</th>
+            <th>Labourer</th>
+            <th>Skill Group</th>
+            <th>WhatsApp / Mobile</th>
+            <th>Net Pay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in payroll_lines %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ line.labour_code }}</td>
+            <td>{{ line.labourer_name }}</td>
+            <td>{{ line.skill_group_name }}</td>
+            <td>
+                {{ line.labour_assignment.labourer.whatsapp_number|default:line.labour_assignment.labourer.mobile_number }}
+            </td>
+            <td>₹ {{ line.net_pay|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No payroll lines found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

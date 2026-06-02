@@ -97,3 +97,86 @@ def send_single_payslip_whatsapp(payroll_line, request):
         log.error_message = str(error)
         log.save(update_fields=["status", "error_message", "updated_at"])
         raise
+
+
+def send_bulk_payslips_whatsapp(payroll_run, request, skip_successful=True):
+    """
+    Sends Form XIX payslips by WhatsApp for all payroll lines in one payroll run.
+
+    skip_successful=True means:
+    - already SENT / DELIVERED / READ logs will not be resent
+    """
+
+    results = {
+        "sent": 0,
+        "failed": 0,
+        "skipped": 0,
+        "details": [],
+    }
+
+    payroll_lines = (
+        payroll_run.lines
+        .select_related(
+            "payroll_run",
+            "payroll_run__company",
+            "payroll_run__po",
+            "payroll_run__payroll_cycle",
+            "company",
+            "payroll_cycle",
+            "labour_assignment",
+            "labour_assignment__labourer",
+        )
+        .order_by("labourer_name")
+    )
+
+    successful_statuses = [
+        WhatsAppPayslipLog.Status.SENT,
+        WhatsAppPayslipLog.Status.DELIVERED,
+        WhatsAppPayslipLog.Status.READ,
+    ]
+
+    for payroll_line in payroll_lines:
+        existing_log = getattr(payroll_line, "whatsapp_log", None)
+
+        if (
+            skip_successful
+            and existing_log
+            and existing_log.status in successful_statuses
+        ):
+            results["skipped"] += 1
+            results["details"].append(
+                {
+                    "labourer": payroll_line.labourer_name,
+                    "status": "skipped",
+                    "message": "Already sent earlier.",
+                }
+            )
+            continue
+
+        try:
+            log = send_single_payslip_whatsapp(
+                payroll_line=payroll_line,
+                request=request,
+            )
+
+            results["sent"] += 1
+            results["details"].append(
+                {
+                    "labourer": payroll_line.labourer_name,
+                    "status": "sent",
+                    "message": f"Sent to {log.phone_number}",
+                }
+            )
+
+        except Exception as error:
+            results["failed"] += 1
+            results["details"].append(
+                {
+                    "labourer": payroll_line.labourer_name,
+                    "status": "failed",
+                    "message": str(error),
+                }
+            )
+
+    return results
+

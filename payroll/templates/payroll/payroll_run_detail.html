@@ -175,6 +175,10 @@
         Download Individual Payslips ZIP
     </a>
 
+    <a class="btn" href="{% url 'payroll:payroll_run_bulk_whatsapp' payroll_run.id %}">
+        Bulk WhatsApp
+    </a>
+
     <button class="btn" onclick="window.print()">Print Summary</button>
 </div>
 

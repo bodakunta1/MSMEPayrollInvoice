@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 from .models import PayrollLine, PayrollRun
 from .webhook_services import process_whatsapp_webhook_payload
+from .whatsapp_services import send_bulk_payslips_whatsapp
 
 
 # Create your views here.
@@ -470,3 +471,63 @@ def whatsapp_webhook(request):
         )
 
     return HttpResponse("Method not allowed", status=405)
+
+# The following views are for triggering bulk WhatsApp sending for payroll runs.
+
+@login_required
+def payroll_run_bulk_whatsapp(request, pk):
+    """
+    GET  = show confirmation page
+    POST = send payslips by WhatsApp for the whole payroll run
+    """
+
+    payroll_run = get_object_or_404(
+        PayrollRun.objects.select_related(
+            "company",
+            "po",
+            "payroll_cycle",
+        ).prefetch_related(
+            "lines",
+            "lines__labour_assignment",
+            "lines__labour_assignment__labourer",
+        ),
+        pk=pk,
+    )
+
+    payroll_lines = payroll_run.lines.all().order_by("labourer_name")
+
+    if request.method == "POST":
+
+        results = send_bulk_payslips_whatsapp(
+            payroll_run=payroll_run,
+            request=request,
+            skip_successful=True,
+        )
+
+        messages.success(
+            request,
+            (
+                f"Bulk WhatsApp completed. "
+                f"Sent: {results['sent']}, "
+                f"Failed: {results['failed']}, "
+                f"Skipped: {results['skipped']}."
+            ),
+        )
+
+        return render(
+            request,
+            "payroll/bulk_whatsapp_result.html",
+            {
+                "payroll_run": payroll_run,
+                "results": results,
+            },
+        )
+
+    return render(
+        request,
+        "payroll/bulk_whatsapp_confirm.html",
+        {
+            "payroll_run": payroll_run,
+            "payroll_lines": payroll_lines,
+        },
+    )

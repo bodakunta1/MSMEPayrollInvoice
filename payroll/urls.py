@@ -45,5 +45,10 @@ urlpatterns = [
         views.payroll_line_send_whatsapp,
         name="payroll_line_send_whatsapp",
     ),  
+    path(
+        "runs/<int:pk>/bulk-whatsapp/",
+        views.payroll_run_bulk_whatsapp,
+        name="payroll_run_bulk_whatsapp",
+    ),
 
 ]
