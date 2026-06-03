@@ -498,11 +498,19 @@ def payroll_run_bulk_whatsapp(request, pk):
 
     if request.method == "POST":
 
+        resend_successful = request.POST.get("resend_successful") == "yes"
+
         results = send_bulk_payslips_whatsapp(
             payroll_run=payroll_run,
             request=request,
-            skip_successful=True,
+            skip_successful=not resend_successful,
         )
+
+        # results = send_bulk_payslips_whatsapp(
+        #     payroll_run=payroll_run,
+        #     request=request,
+        #     skip_successful=True,
+        # )
 
         messages.success(
             request,

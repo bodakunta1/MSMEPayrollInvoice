@@ -87,6 +87,12 @@
 
     <form method="post" style="display:inline;">
         {% csrf_token %}
+
+        <label style="display:block; margin: 12px 0;">
+            <input type="checkbox" name="resend_successful" value="yes">
+            Resend already sent payslips
+        </label>
+        
         <button class="btn btn-danger" type="submit">
             Confirm Bulk Send
         </button>
