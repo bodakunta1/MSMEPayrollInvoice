@@ -459,6 +459,9 @@ def whatsapp_webhook(request):
                 {"ok": False, "error": "Invalid JSON"},
                 status=400,
             )
+        
+        print("WHATSAPP WEBHOOK POST RECEIVED")
+        print(payload)
 
         processed_count = process_whatsapp_webhook_payload(payload)
 
