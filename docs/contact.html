@@ -36,7 +36,7 @@
         <p><strong>Business:</strong> Mechanical Maintenance & Industrial Services</p>
         <p><strong>Location:</strong> Ramagundam, Peddapalli, Telangana, India</p>
         <p><strong>Phone:</strong> +91 9550573260</p>
-        <p><strong>Email:</strong> gsrinivasaenterprises@example.com</p>
+        <p><strong>Email:</strong> gsntpc2013@gmail.com</p>
         <p><strong>GST:</strong> 36AARFS9280M1Z5</p>
 
         <p>
@@ -45,27 +45,37 @@
         </p>
 
         <a href="https://wa.me/919550573260" class="btn">Message on WhatsApp</a>
-        <a href="mailto:gsrinivasaenterprises@example.com" class="btn dark">Send Email</a>
+        <a href="mailto:gsntpc2013@gmail.com" class="btn dark">Send Email</a>
     </div>
 
     <div class="contact-box">
         <h2>Enquiry Form</h2>
 
-        <form action="mailto:gsrinivasaenterprises@example.com" method="post" enctype="text/plain">
-            <label>Name</label>
-            <input type="text" name="name" placeholder="Your name">
+        <form class="enquiry-form" action="mailto:gsntpc2013@gmail.com" method="post" enctype="text/plain">
 
-            <label>Phone</label>
-            <input type="text" name="phone" placeholder="Your phone number">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input id="name" type="text" name="name" placeholder="Your name">
+        </div>
 
-            <label>Service Required</label>
-            <input type="text" name="service" placeholder="Mechanical maintenance / welding / invoice">
+        <div class="form-group">
+            <label for="phone">Phone</label>
+            <input id="phone" type="text" name="phone" placeholder="Your phone number">
+        </div>
 
-            <label>Message</label>
-            <textarea name="message" rows="5" placeholder="Write your enquiry"></textarea>
+        <div class="form-group">
+            <label for="service">Service Required</label>
+            <input id="service" type="text" name="service" placeholder="Mechanical maintenance / welding / invoice">
+        </div>
 
-            <button type="submit" class="btn">Submit Enquiry</button>
-        </form>
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" placeholder="Write your enquiry"></textarea>
+        </div>
+
+        <button type="submit" class="btn form-submit">Submit Enquiry</button>
+
+    </form>
     </div>
 </section>
 
